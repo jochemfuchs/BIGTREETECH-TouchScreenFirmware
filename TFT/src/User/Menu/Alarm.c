@@ -89,6 +89,17 @@ static void drawText(const GUI_RECT * r, const char * s, uint16_t fg, uint16_t b
   setFontSize(FONT_SIZE_NORMAL);
 }
 
+// popup text can be long ("Open: Back door, Window"): word-wrap it in the normal font
+static void drawPopup(const char * s)
+{
+  const GUI_RECT inner = {popupRect.x0 + 16, popupRect.y0 + 16, popupRect.x1 - 16, popupRect.y1 - 16};
+
+  GUI_FillRectColor(popupRect.x0, popupRect.y0, popupRect.x1, popupRect.y1, MAT_DARKGRAY);
+  GUI_SetColor(WHITE);
+  GUI_SetTextMode(GUI_TEXTMODE_TRANS);
+  _GUI_DispStringInPrectEOL(&inner, (const uint8_t *)s);
+}
+
 static void alarmDrawKey(uint8_t i, uint8_t pressed)
 {
   if (i >= K_COUNT || idle || core.popup[0] != '\0')
@@ -133,16 +144,16 @@ static void alarmRefresh(bool force)
     if (popup)
     {
       if (force)
-        drawText(&popupRect, core.popup, WHITE, MAT_DARKGRAY);
+        drawPopup(core.popup);
     }
     else
     {
       if (force || pinLen != drawnPinLen)
       {
-        char dots[ALARM_PIN_MAX * 2 + 1] = "";
+        char dots[ALARM_PIN_MAX + 1] = "";  // no spaces: 10 large glyphs must fit the 260 px rect
 
         for (uint8_t i = 0; i < pinLen; i++)
-          strcat(dots, "* ");
+          strcat(dots, "*");
 
         drawText(&pinRect, dots, WHITE, BLACK);
       }
@@ -185,9 +196,9 @@ static void alarmHandleKey(uint16_t key, uint32_t now)
     return;
   }
 
+  // the keypress beep comes from BTT's TS_KeyValue(); only add the deny sound
   if (key < K_AWAY)
   {
-    BUZZER_PLAY(SOUND_KEYPRESS);
     alarmCoreKey(&core, keyChar[key], now);
   }
   else if (key < K_COUNT)
@@ -196,7 +207,6 @@ static void alarmHandleKey(uint16_t key, uint32_t now)
 
     if (alarmCoreCmd(&core, keyAction[key], line, sizeof(line), now))
     {
-      BUZZER_PLAY(SOUND_KEYPRESS);
       Serial_Put(SERIAL_PORT, line);  // direct write: bypasses the gcode queue, which would wait for "ok"
       memset(line, 0, sizeof(line));  // don't leave the PIN on the stack
     }
