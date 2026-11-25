@@ -21,10 +21,7 @@ void Mode_Switch(void)
       // process needed by parseAck() function to establish the connection
       initMachineSettings();
 
-      if (infoSettings.status_screen == 1)  // if Status Screen menu is selected
-        REPLACE_MENU(menuStatus);  // status screen as default home screen on boot
-      else
-        REPLACE_MENU(menuMain);  // classic UI
+      REPLACE_MENU(menuAlarm);  // alarm panel fork: always boot into the alarm screen
 
       #ifdef SHOW_BTT_BOOTSCREEN
         if (modeFreshBoot)

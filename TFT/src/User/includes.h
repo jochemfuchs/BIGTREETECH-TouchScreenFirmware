@@ -119,6 +119,7 @@
 #include "Heat.h"
 #include "Home.h"
 #include "LEDColor.h"
+#include "Alarm.h"
 #include "LevelCorner.h"
 #include "Leveling.h"
 #include "LoadUnload.h"

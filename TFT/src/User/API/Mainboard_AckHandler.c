@@ -373,6 +373,9 @@ void parseAck(void)
 
     InfoHost_UpdateAckTimestamp();  // update last received ACK message timestamp
 
+    if (alarmRx(ack_cache))  // alarm panel fork: our lines never reach the printer logic,
+      continue;              // the terminal, or the supplementary serial ports
+
     bool avoid_terminal = false;
 
     //----------------------------------------
